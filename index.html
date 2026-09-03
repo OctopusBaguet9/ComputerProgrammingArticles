@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Live Text Share</title>
     <!-- Include the Supabase JS Library -->
-    <script src="https://jsdelivr.net">
+    <script src="https://jsdelivr.net"></script>
     <style>
         body { font-family: sans-serif; max-width: 600px; margin: 40px auto; padding: 0 20px; }
         textarea { width: 100%; height: 100px; margin-bottom: 10px; }
@@ -30,7 +30,7 @@
         // 1. Configure Supabase (Replace with your actual credentials)
         const SUPABASE_URL = "https://qttpacqvxorqbjvsebsu.supabase.co";
         const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF0dHBhY3F2eG9ycWJqdnNlYnN1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODgzMjAyODEsImV4cCI6MjEwMzg5NjI4MX0.couWusAvItKzLQXx-Xifp5TEMnNSs7vQ0nJTjFh4Z_0";
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
         const form = document.getElementById('textForm');
         const contentInput = document.getElementById('textContent');
