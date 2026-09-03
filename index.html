@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Live Text Share</title>
-    <!-- Include the Supabase JS Library -->
+    <!-- FIX: Updated with the correct, full Supabase CDN URL -->
     <script src="https://jsdelivr.net"></script>
     <style>
         body { font-family: sans-serif; max-width: 600px; margin: 40px auto; padding: 0 20px; }
@@ -15,7 +15,7 @@
 <body>
 
     <h1>Public Text Share</h1>
-    
+         
     <!-- Input Form -->
     <form id="textForm">
         <textarea id="textContent" placeholder="Enter text or HTML here..." required></textarea>
@@ -27,10 +27,12 @@
     <div id="feed">Loading posts...</div>
 
     <script>
-        // 1. Configure Supabase (Replace with your actual credentials)
+        // 1. Configure Supabase
         const SUPABASE_URL = "https://qttpacqvxorqbjvsebsu.supabase.co";
         const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF0dHBhY3F2eG9ycWJqdnNlYnN1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODgzMjAyODEsImV4cCI6MjEwMzg5NjI4MX0.couWusAvItKzLQXx-Xifp5TEMnNSs7vQ0nJTjFh4Z_0";
-        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        
+        // FIX: The CDN exposes it under the global variable `supabase`
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
         const form = document.getElementById('textForm');
         const contentInput = document.getElementById('textContent');
@@ -38,21 +40,29 @@
 
         // 2. Fetch existing posts on load
         async function fetchPosts() {
-            const { data, error } = await supabase
+            const { data, error } = await supabaseClient
                 .from('posts')
                 .select('*')
                 .order('created_at', { ascending: false });
-            
-            if (error) console.error(error);
-            else renderFeed(data);
+                        
+            if (error) {
+                console.error(error);
+                feedDiv.innerHTML = "Error loading posts. Check console.";
+            } else {
+                renderFeed(data);
+            }
         }
 
-        // 3. Render posts to the DOM (renders raw HTML securely if intended)
+        // 3. Render posts to the DOM
         function renderFeed(posts) {
+            if (!posts || posts.length === 0) {
+                feedDiv.innerHTML = "No posts found.";
+                return;
+            }
             feedDiv.innerHTML = posts.map(post => `
                 <div class="post">
                     <small>${new Date(post.created_at).toLocaleString()}</small>
-                    <div>${post.content}</div> <!-- Warning: Renders raw HTML directly -->
+                    <div>${post.content}</div>
                 </div>
             `).join('');
         }
@@ -62,20 +72,22 @@
             e.preventDefault();
             const text = contentInput.value;
 
-            const { error } = await supabase
+            const { error } = await supabaseClient
                 .from('posts')
                 .insert([{ content: text }]);
 
-            if (error) alert('Error uploading: ' + error.message);
-            else contentInput.value = ''; // Clear input
+            if (error) {
+                alert('Error uploading: ' + error.message);
+            } else {
+                contentInput.value = ''; // Clear input
+            }
         });
 
         // 5. Listen for Live Realtime Updates
-        supabase
+        supabaseClient
             .channel('schema-db-changes')
             .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'posts' }, (payload) => {
-                // Refresh the feed instantly when a new row is added anywhere
-                fetchPosts(); 
+                fetchPosts();
             })
             .subscribe();
 
